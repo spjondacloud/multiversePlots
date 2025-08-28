@@ -2,26 +2,28 @@
 % Please edit documentation in R/generate_density_plot.R
 \name{generate_density_plot}
 \alias{generate_density_plot}
-\title{Density plot for multiverse outcomes}
+\title{Density plot with shaded significant area}
 \usage{
 generate_density_plot(data, outcome_var, outcome_var_label)
 }
 \arguments{
-\item{data}{A data.frame containing outcome and a logical column \code{significant}.}
+\item{data}{A data.frame containing \code{outcome_var} and a logical \code{significant} (or a p-value to derive it upstream).}
 
-\item{outcome_var}{Character. Name of the outcome variable (numeric).}
+\item{outcome_var}{String. Name of the outcome variable.}
 
-\item{outcome_var_label}{Character. Label for the x-axis.}
+\item{outcome_var_label}{String. Label for the x-axis.}
 }
 \value{
 A ggplot object.
 }
 \description{
-Draws a density curve for the outcome and overlays a scaled density
-for statistically significant estimates.
+Draws the overall density curve of the outcome and shades the area under the
+density for significant rows.
 }
 \examples{
-# df <- read.csv("data/hurricane_mva_results.csv", sep=";")
-# df$significant <- df$p < 0.05
-# generate_density_plot(df, "edif", "Extra deaths")
+\dontrun{
+df <- data.frame(edif = rnorm(200), p = runif(200))
+df$significant <- df$p < 0.05
+generate_density_plot(df, "edif", "Excess Fatalities")
+}
 }

@@ -1,40 +1,36 @@
-#' Full multiverse plot (density + heatmap strips)
+#' Plot the multiverse figure (density + heatmap strips)
 #'
-#' Wrapper that combines density and heatmap plots.
-#' Works in two modes:
-#' 1) High-level: pass only use_case (calls prep_data()).
-#' 2) Low-level: provide df/outcome_var/etc. explicitly.
+#' Two calling styles:
+#' 1) By use case: plot_multiverse("hurricane") or plot_multiverse("beauty")
+#' 2) By explicit components: plot_multiverse(df = df, outcome_var = "...",
+#'    outcome_var_label = "...", strip_vars = c(...), variable_labels = c(...))
 #'
-#' @param use_case Character. Either "hurricane" or "beauty". Ignored if df is supplied.
-#' @param df Data frame with results (optional).
-#' @param outcome_var Character name of outcome column.
-#' @param outcome_var_label Label for the x-axis.
-#' @param strip_vars Decision variables.
-#' @param variable_labels Labels for decision variables.
-#' @param save_path Optional file path to save the plot.
-#'
-#' @return A patchwork combined plot.
+#' @param use_case Optional, "hurricane" or "beauty".
+#' @param output_path Optional file path to save the figure (width=11.5, height=8).
+#' @param df Optional data.frame (if provided, overrides use_case mode).
+#' @param outcome_var Optional string (required if df is provided).
+#' @param outcome_var_label Optional string (x-axis label, required if df is provided).
+#' @param strip_vars Optional character vector of decision variables (required if df is provided).
+#' @param variable_labels Optional named character vector mapping strip_vars to display labels.
+#' @return A patchwork/ggplot object.
 #' @examples
-#' # High-level:
-#' # plot_multiverse("hurricane")
-#' # plot_multiverse("beauty", save_path = "beauty.png")
-#'
-#' # Low-level:
-#' # prep <- prep_data("hurricane")
-#' # plot_multiverse(df = prep[[1]], outcome_var = prep[[2]],
-#' #                 outcome_var_label = prep[[3]], strip_vars = prep[[4]],
-#' #                 variable_labels = prep[[5]])
+#' \dontrun{
+#' plot_multiverse("hurricane")
+#' plot_multiverse("beauty")
+#' }
 #' @export
-plot_multiverse <- function(use_case = c("hurricane","beauty"),
-                            df = NULL,
-                            outcome_var = NULL,
-                            outcome_var_label = NULL,
-                            strip_vars = NULL,
-                            variable_labels = NULL,
-                            save_path = NULL) {
-  if (is.null(df)) {
-    use_case <- match.arg(use_case)
-    prep <- prep_data(use_case)
+plot_multiverse <- function(use_case = NULL, output_path = NULL,
+                            df = NULL, outcome_var = NULL, outcome_var_label = NULL,
+                            strip_vars = NULL, variable_labels = NULL) {
+
+  # Branch A: explicit components provided
+  if (!is.null(df)) {
+    stopifnot(!is.null(outcome_var), !is.null(outcome_var_label),
+              !is.null(strip_vars), !is.null(variable_labels))
+  } else {
+    # Branch B: use-case mode
+    if (is.null(use_case)) stop("Either provide `use_case` or explicit `df`+args.")
+    prep <- prep_data(use_case = use_case)
     df                <- prep[[1]]
     outcome_var       <- prep[[2]]
     outcome_var_label <- prep[[3]]
@@ -42,18 +38,26 @@ plot_multiverse <- function(use_case = c("hurricane","beauty"),
     variable_labels   <- prep[[5]]
   }
 
+  if (!"significant" %in% names(df) && "p" %in% names(df)) {
+    df <- df %>% dplyr::mutate(significant = .data$p < 0.05)
+  }
+  if (!"significant" %in% names(df) && "p_b" %in% names(df)) {
+    df <- df %>% dplyr::mutate(significant = .data$p_b < 0.05)
+  }
+  if (!"significant" %in% names(df)) {
+    stop("`df` must contain `significant` (logical) or a p-value to derive it.")
+  }
+
   density_plot <- generate_density_plot(df, outcome_var, outcome_var_label)
   heatmap_plot <- generate_heatmap_strips(df, outcome_var, strip_vars, variable_labels)
 
-  strip_levels <- sapply(strip_vars, function(v) nlevels(df[[v]]))
-  total_strip_levels <- sum(strip_levels)
-  heights_vector <- c(0.5 * total_strip_levels, strip_levels + 1)
+  density_ratio <- 0.30
+  heights_pair  <- c(density_ratio, 1 - density_ratio)
 
-  combined <- density_plot / heatmap_plot +
-    patchwork::plot_layout(heights = heights_vector)
+  combined <- density_plot / heatmap_plot + patchwork::plot_layout(heights = heights_pair)
 
-  if (!is.null(save_path)) {
-    ggplot2::ggsave(save_path, combined, width = 11.5, height = 6.12, dpi = 300)
+  if (!is.null(output_path)) {
+    ggplot2::ggsave(filename = output_path, plot = combined, width = 11.50, height = 8.00)
   }
   combined
 }

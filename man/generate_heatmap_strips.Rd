@@ -2,7 +2,7 @@
 % Please edit documentation in R/generate_heatmap_strips.R
 \name{generate_heatmap_strips}
 \alias{generate_heatmap_strips}
-\title{Heatmap strips for multiverse decisions}
+\title{Heatmap strips for analytical decisions}
 \usage{
 generate_heatmap_strips(
   data,
@@ -14,25 +14,27 @@ generate_heatmap_strips(
 )
 }
 \arguments{
-\item{data}{A data.frame containing \code{outcome_var} and factor columns in \code{strip_vars}.}
+\item{data}{Data frame (with factor decision vars).}
 
-\item{outcome_var}{Character. Name of numeric outcome.}
+\item{outcome_var}{Name of outcome column.}
 
-\item{strip_vars}{Character vector of decision variables (factors).}
+\item{strip_vars}{Character vector of factor decision variables.}
 
-\item{variable_labels}{Named character vector: pretty labels for \code{strip_vars}.}
+\item{variable_labels}{Named vector for display labels.}
 
-\item{n_bins}{Integer number of bins for the outcome (default 20).}
+\item{n_bins}{Number of x bins.}
 
 \item{palette_option}{Viridis palette option.}
 }
 \value{
-A patchwork object (ggplot) with stacked strips.
+A patchwork object.
 }
 \description{
-Generates stacked heatmap strips showing the distribution of outcomes
-across decision levels for each variable in \code{strip_vars}.
+Heatmap strips for analytical decisions
 }
 \examples{
-# heatmap_plot <- generate_heatmap_strips(df, "edif", c("k1","k2"), c(k1="Outliers", k2="Leverage"))
+\dontrun{
+prep <- prep_data("hurricane")
+generate_heatmap_strips(prep[[1]], prep[[2]], prep[[4]], prep[[5]])
+}
 }

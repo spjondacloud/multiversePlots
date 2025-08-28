@@ -2,52 +2,47 @@
 % Please edit documentation in R/plot_multiverse.R
 \name{plot_multiverse}
 \alias{plot_multiverse}
-\title{Full multiverse plot (density + heatmap strips)}
+\title{Plot the multiverse figure (density + heatmap strips)}
 \usage{
 plot_multiverse(
-  use_case = c("hurricane", "beauty"),
+  use_case = NULL,
+  output_path = NULL,
   df = NULL,
   outcome_var = NULL,
   outcome_var_label = NULL,
   strip_vars = NULL,
-  variable_labels = NULL,
-  save_path = NULL
+  variable_labels = NULL
 )
 }
 \arguments{
-\item{use_case}{Character. Either "hurricane" or "beauty". Ignored if df is supplied.}
+\item{use_case}{Optional, "hurricane" or "beauty".}
 
-\item{df}{Data frame with results (optional).}
+\item{output_path}{Optional file path to save the figure (width=11.5, height=8).}
 
-\item{outcome_var}{Character name of outcome column.}
+\item{df}{Optional data.frame (if provided, overrides use_case mode).}
 
-\item{outcome_var_label}{Label for the x-axis.}
+\item{outcome_var}{Optional string (required if df is provided).}
 
-\item{strip_vars}{Decision variables.}
+\item{outcome_var_label}{Optional string (x-axis label, required if df is provided).}
 
-\item{variable_labels}{Labels for decision variables.}
+\item{strip_vars}{Optional character vector of decision variables (required if df is provided).}
 
-\item{save_path}{Optional file path to save the plot.}
+\item{variable_labels}{Optional named character vector mapping strip_vars to display labels.}
 }
 \value{
-A patchwork combined plot.
+A patchwork/ggplot object.
 }
 \description{
-Wrapper that combines density and heatmap plots.
-Works in two modes:
+Two calling styles:
 \enumerate{
-\item High-level: pass only use_case (calls prep_data()).
-\item Low-level: provide df/outcome_var/etc. explicitly.
+\item By use case: plot_multiverse("hurricane") or plot_multiverse("beauty")
+\item By explicit components: plot_multiverse(df = df, outcome_var = "...",
+outcome_var_label = "...", strip_vars = c(...), variable_labels = c(...))
 }
 }
 \examples{
-# High-level:
-# plot_multiverse("hurricane")
-# plot_multiverse("beauty", save_path = "beauty.png")
-
-# Low-level:
-# prep <- prep_data("hurricane")
-# plot_multiverse(df = prep[[1]], outcome_var = prep[[2]],
-#                 outcome_var_label = prep[[3]], strip_vars = prep[[4]],
-#                 variable_labels = prep[[5]])
+\dontrun{
+plot_multiverse("hurricane")
+plot_multiverse("beauty")
+}
 }
